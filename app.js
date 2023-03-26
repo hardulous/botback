@@ -18,37 +18,42 @@ io.on("connection", (socket) => {
   // const javaProcess = spawn("java", ["-jar", "hellohome.jar"], {
   //   cwd: "./java",
   // });
-
-  const javaProcess = spawn("java", ["-jar", "Eutility2.jar"], {
-    cwd: "./java",
-  });
-  
   let output = "";
+  let JavaProcess;
 
-  javaProcess.stdout.on("data", (data) => {
-    // output += data.toString();
-    output = data.toString();
-    console.log(data.toString());
-    io.emit("receive-message", output);
-  });
+  socket.on("start-jar", () => {
+    JavaProcess = spawn("java", ["-jar", "Eutility2dash11.jar"], {
+      cwd: "./java",
+    });
 
-  javaProcess.stderr.on("data", (data) => {
-    console.error(data.toString());
-  });
+    JavaProcess.stdout.on("data", (data) => {
+      // output += data.toString();
+      output = data.toString();
+      console.log(data.toString());
+      io.emit("to-chatbot-front", output);
+    });
 
-  javaProcess.on("exit", (code) => {
-    console.log(`Java program exited with code ${code}`);
-  });
+    JavaProcess.stderr.on("data", (data) => {
+      console.error(data.toString());
+    });
 
-  socket.on("custom-event", (n1) => {
-    javaProcess.stdin.write(String(n1) + "\n");
+    JavaProcess.on("exit", (code) => {
+      console.log(`Java program exited with code ${code}`);
+    });
+
+    socket.on("kill-jar", () => {
+      JavaProcess.kill("SIGKILL");
+    });
+
+    socket.on("to-chatbot-back", (n1) => {
+      JavaProcess.stdin.write(String(n1) + "\n");
+    });
   });
 
   // setTimeout(()=>{
   //   console.log("kill")
   //   javaProcess.kill("SIGKILL");  this will kill the jar file code without any error
   // },5000)
-
 });
 
 app.get("/test-child-process", (req, res) => {
