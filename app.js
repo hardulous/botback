@@ -50,6 +50,10 @@ io.on("connection", (socket) => {
     });
   });
 
+  socket.on("disconnect",()=>{
+    JavaProcess.kill("SIGKILL");
+  })
+
   // setTimeout(()=>{
   //   console.log("kill")
   //   javaProcess.kill("SIGKILL");  this will kill the jar file code without any error
